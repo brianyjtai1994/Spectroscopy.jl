@@ -1,5 +1,7 @@
 module Spectroscopy
 
-greet() = print("Hello World!")
+abstract type TimeAxis end
+
+include("./TimeDelay.jl")
 
 end # module
