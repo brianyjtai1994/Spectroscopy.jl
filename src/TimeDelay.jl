@@ -1,7 +1,18 @@
-export TimeDelay
+export TimeDelay, ps2μm!, μm2ps!
 
 ps2μm(t::Real) = round(149.896225 * t)
 μm2ps(d::Real) = d / 149.896225
+
+for f in (:ps2μm, :μm2ps)
+    @eval begin
+        function $(Symbol(f, !))(arr::VecI)
+            @simd for i in eachindex(arr)
+                @inbounds arr[i] = $f(arr[i])
+            end
+            return nothing
+        end
+    end
+end
 
 struct TimeDelay <: TimeAxis
     dat::Vector{Float64}
