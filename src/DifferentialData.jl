@@ -9,6 +9,19 @@ struct DifferentialData <: TimeResolvedData
         Vector{Float64}(undef, n), Vector{Float64}(undef, n),
         Dict(:dims => n, :count => 0)
     )
+
+    function DifferentialData(s::String, c::Int=1; Ireal::Int=2)
+        data = readdlm(s)
+        dims = size(data, 1)
+        real = Vector{Float64}(undef, dims)
+        @simd for i in eachindex(1:dims)
+            @inbounds real[i] = data[i, Ireal]
+        end
+        return new(
+            real, zeros(Float64, dims), zeros(Float64, dims), zeros(Float64, dims),
+            Dict(:dims => dims, :count => c)
+        )
+    end
 end
 
 # Perform a single step of Wolford algorithm

@@ -15,7 +15,7 @@ for f in (:ps2μm, :μm2ps)
 end
 
 struct TimeDelay <: TimeAxis
-    dat::Vector{Float64}
+    dat::Vector{Float64} # unit: μm
 
     function TimeDelay(src::VecI, unit::String="ps")
         dat = similar(src)
@@ -26,6 +26,23 @@ struct TimeDelay <: TimeAxis
         elseif unit ≡ "μm"
             @simd for i in eachindex(dat)
                 @inbounds dat[i] = src[i]
+            end
+        else
+            error("TimeDelay(..., unit = $unit) is not allowed.")
+        end
+        return new(dat)
+    end
+
+    function TimeDelay(s::String, unit::String="μm"; Itdy::Int=1)
+        raw = readdlm(s)
+        dat = Vector{Float64}(undef, size(raw, 1))
+        if unit ≡ "μm"
+            @simd for i in eachindex(dat)
+                @inbounds dat[i] = raw[i, Itdy]
+            end
+        elseif unit ≡ "ps"
+            @simd for i in eachindex(dat)
+                @inbounds dat[i] = ps2μm(raw[i, Itdy])
             end
         else
             error("TimeDelay(..., unit = $unit) is not allowed.")
