@@ -34,6 +34,49 @@ macro get(obj::Symbol, vars::Symbol...)
     return Expr(:escape, Expr(:block, e...))
 end
 
+#### ceiling `x` to a power-of-2 integer
+function clp2(x::Int)
+    x == 0 && return 1
+    x == 1 && return 2
+    x = x - 1
+    x = x | (x >> 1)
+    x = x | (x >> 2)
+    x = x | (x >> 4)
+    x = x | (x >> 8)
+    x = x | (x >> 16)
+    return x + 1
+end
+
+function sqr2(x::Real, y::Real)
+    isnan(x) && return x
+    isnan(y) && return y
+    # general case
+    xabs = abs(x)
+    yabs = abs(y)
+    w = max(xabs, yabs)
+    z = min(xabs, yabs)
+    iszero(z) && return abs2(w)
+    return abs2(w) * (1.0 + abs2(z / w))
+end
+
+function apy2(x::Real, y::Real)
+    isnan(x) && return x
+    isnan(y) && return y
+    # general case
+    xabs = abs(x)
+    yabs = abs(y)
+    w = max(xabs, yabs)
+    z = min(xabs, yabs)
+    iszero(z) && return w
+    return w * sqrt(1.0 + abs2(z / w))
+end
+
+# (xn + i * yn) / (xd + i * yd)
+function cdiv(xn::Real, yn::Real, xd::Real, yd::Real)
+    m = sqr2(xd, yd)
+    return (xn * xd + yn * yd) / m, (yn * xd - xn * yd) / m
+end
+
 function polyinterp(x::Real, xv::VecI, yv::VecI, bv::VecB, n::Int)
     one2n = eachindex(1:n)
     @inbounds for i in one2n
@@ -94,5 +137,6 @@ export polyinterp!
 
 include("./TimeDelay.jl")
 include("./DifferentialData.jl")
+include("./TimeDomainData.jl")
 
 end # module
